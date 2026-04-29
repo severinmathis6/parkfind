@@ -1,0 +1,38 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+model Parking {
+  id              Int          @id @default(autoincrement())
+  name            String
+  address         String
+  city            String
+  parkingType     ParkingType  @map("parking_type")
+  latitude        Float
+  longitude       Float
+  totalSpots      Int          @map("total_spots")
+  availableSpots  Int          @map("available_spots")
+  pricePerHour    Decimal      @map("price_per_hour") @db.Decimal(10, 2)
+  isEvCharging    Boolean      @default(false) @map("is_ev_charging")
+  maxHeight       Float?       @map("max_height")
+  openingHours    String?      @map("opening_hours")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@map("parkings")
+}
+
+enum ParkingType {
+  street
+  garage
+  private
+
+  @@map("parking_type")
+}
