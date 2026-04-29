@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { execSync } from 'node:child_process'
 import { PrismaClient } from '@prisma/client'
 import { afterAll, beforeAll, beforeEach } from 'vitest'

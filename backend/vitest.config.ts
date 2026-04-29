@@ -8,6 +8,7 @@ export default defineConfig({
     include: ['src/**/*.spec.ts'],
     exclude: ['src/**/*.integration.spec.ts'],
     environment: 'node',
+    setupFiles: ['./test/unit-setup.ts'],
   },
   plugins: [
     swc.vite({
