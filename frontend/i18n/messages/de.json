@@ -1,0 +1,41 @@
+{
+  "app": {
+    "title": "Parkplatz-Finder",
+    "subtitle": "Schweizer Parkplätze in deiner Nähe"
+  },
+  "location": {
+    "locate_me": "Standort verwenden",
+    "denied": "Standort nicht verfügbar — verschiebe die Karte",
+    "loading": "Suche Standort..."
+  },
+  "filters": {
+    "title": "Filter",
+    "is_free_label": "Kostenlos",
+    "ev_charging_label": "Mit Ladestation",
+    "type_street": "Strasse",
+    "type_garage": "Parkhaus",
+    "type_private": "Privat",
+    "clear": "Filter zurücksetzen"
+  },
+  "detail": {
+    "address": "Adresse",
+    "available": "Frei",
+    "of": "von",
+    "price_per_hour": "Preis pro Stunde",
+    "free": "Kostenlos",
+    "ev_charging": "Ladestation verfügbar",
+    "no_ev_charging": "Keine Ladestation",
+    "max_height": "Max. Höhe",
+    "opening_hours": "Öffnungszeiten",
+    "navigate": "Navigation starten",
+    "close": "Schliessen"
+  },
+  "errors": {
+    "load_failed": "Daten konnten nicht geladen werden",
+    "retry": "Erneut versuchen"
+  },
+  "locale": {
+    "de": "Deutsch",
+    "en": "English"
+  }
+}

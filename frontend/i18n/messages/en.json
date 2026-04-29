@@ -1,0 +1,41 @@
+{
+  "app": {
+    "title": "Parking Finder",
+    "subtitle": "Swiss parking spots near you"
+  },
+  "location": {
+    "locate_me": "Use my location",
+    "denied": "Location unavailable — drag the map",
+    "loading": "Locating..."
+  },
+  "filters": {
+    "title": "Filters",
+    "is_free_label": "Free only",
+    "ev_charging_label": "EV charging",
+    "type_street": "Street",
+    "type_garage": "Garage",
+    "type_private": "Private",
+    "clear": "Clear filters"
+  },
+  "detail": {
+    "address": "Address",
+    "available": "Available",
+    "of": "of",
+    "price_per_hour": "Price per hour",
+    "free": "Free",
+    "ev_charging": "EV charging available",
+    "no_ev_charging": "No EV charging",
+    "max_height": "Max. height",
+    "opening_hours": "Opening hours",
+    "navigate": "Start navigation",
+    "close": "Close"
+  },
+  "errors": {
+    "load_failed": "Failed to load parking data",
+    "retry": "Retry"
+  },
+  "locale": {
+    "de": "Deutsch",
+    "en": "English"
+  }
+}
