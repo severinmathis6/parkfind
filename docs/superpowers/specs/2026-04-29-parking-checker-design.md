@@ -65,13 +65,15 @@ Eine Schweiz-fokussierte Web-Anwendung, die User schnell freie Parkplätze in ih
 ```
 parking-checker/
 ├── frontend/             # Next.js 14
-├── backend/              # NestJS
-├── database/             # Prisma schema + migrations + seed
+├── backend/              # NestJS (enthält backend/prisma/)
+├── database/             # SQL-Referenzen, manuelle Skripte, README
 ├── docs/                 # Specs (dieses File hier)
 ├── docker-compose.yml
 ├── .env.example
 └── README.md
 ```
+
+**Hinweis:** Die CLAUDE.md-Spec listet `database/` als top-level Folder. Praktisch lebt Prisma jedoch in `backend/prisma/` — das ist die NestJS+Prisma-Standardkonvention und vermeidet ein separates Package nur für die DB-Schicht. Der `database/` Folder dient für ergänzende DB-Artefakte (raw SQL für Referenz, ad-hoc-Migrationsskripte, README mit Setup-Steps), enthält aber **nicht** das Prisma-Schema selbst.
 
 ## 5. Backend (NestJS)
 
@@ -101,7 +103,7 @@ backend/src/
 
 | Methode | Pfad | Beschreibung | Query / Body |
 |---|---|---|---|
-| `GET` | `/api/parkings` | Liste in Radius | `lat` (float), `lng` (float), `radius` (int, m, default 2000), optional `is_ev_charging` (bool), `parking_type` (string), `is_free` (bool) |
+| `GET` | `/api/parkings` | Liste in Radius | `lat` (float), `lng` (float), `radius` (int, m, default 2000), optional `is_ev_charging` (bool), `parking_type` (CSV: `street,garage` o. ä.), `is_free` (bool) |
 | `GET` | `/api/parkings/:id` | Einzelnes Parking | `id` (int, path) |
 | `GET` | `/health` | Health-Check | — |
 
@@ -112,7 +114,7 @@ backend/src/
 - `lng: number` — `@IsLongitude()`
 - `radius?: number` — `@IsInt() @Min(50) @Max(20000)`, default 2000
 - `is_ev_charging?: boolean` — `@IsBooleanString()` optional
-- `parking_type?: 'street' | 'garage' | 'private'` — `@IsIn(...)` optional
+- `parking_type?: ParkingType[]` — angenommen als Comma-Separated-Value Query-String (`?parking_type=street,garage`); via `@Transform(({value}) => value.split(','))` zu Array, `@IsArray() @IsEnum(ParkingType, { each: true })`
 - `is_free?: boolean` — `@IsBooleanString()` optional
 
 ### 5.4 Geo-Query
@@ -233,7 +235,7 @@ Jede Änderung schreibt in URL-Search-Params; React-Query refetcht automatisch v
 
 ## 7. Datenbank-Schema
 
-### 7.1 Prisma-Schema (`database/prisma/schema.prisma`)
+### 7.1 Prisma-Schema (`backend/prisma/schema.prisma`)
 
 ```prisma
 generator client {
@@ -337,7 +339,7 @@ CREATE INDEX parkings_parking_type_idx ON parkings(parking_type);
 
 ### 8.3 Seed
 
-`database/prisma/seed.ts` mit Liste hardcoded; Aufruf via `pnpm prisma db seed` (oder automatisch nach `prisma migrate reset`).
+`backend/prisma/seed.ts` mit hardcoded Liste; Aufruf via `pnpm prisma db seed` (oder automatisch nach `prisma migrate reset`). Der Seed-Befehl ist in `backend/package.json` unter `prisma.seed` registriert.
 
 ## 9. Test-Strategie (volles TDD)
 
