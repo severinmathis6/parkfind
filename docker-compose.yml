@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: parking-db
+    environment:
+      POSTGRES_DB: parking
+      POSTGRES_USER: parking
+      POSTGRES_PASSWORD: parking
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parking"]
+      interval: 5s
+      retries: 10
+
+  db-test:
+    image: postgis/postgis:16-3.4
+    container_name: parking-db-test
+    environment:
+      POSTGRES_DB: parking_test
+      POSTGRES_USER: parking
+      POSTGRES_PASSWORD: parking
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parking"]
+      interval: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: parking-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://parking:parking@db:5432/parking
+      PORT: "3001"
+      CORS_ORIGIN: http://localhost:3000
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: sh -c "npm run db:migrate:deploy && npm run start:dev"
+
+volumes:
+  db-data:
