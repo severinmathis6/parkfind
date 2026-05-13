@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParkFind</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F2EE;
+    --bg2: #EDE9E3;
+    --surface: #FDFCFB;
+    --text: #1A1714;
+    --text2: #5C5650;
+    --text3: #9C958D;
+    --border: rgba(26,23,20,0.10);
+    --border2: rgba(26,23,20,0.06);
+    --green: #2D6A4F;
+    --green-bg: #D8EDDF;
+    --yellow: #B5830A;
+    --yellow-bg: #FDF3DC;
+    --red: #C0392B;
+    --red-bg: #FAE0DC;
+    --accent: #3B5BDB;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Geist', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── TABS ─── */
+  .tab-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 14px 20px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 20px;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    margin-right: 28px;
+    padding-bottom: 14px;
+    user-select: none;
+  }
+  .logo span { color: var(--text3); font-style: italic; }
+  .tab {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text3);
+    padding: 0 16px 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.18s;
+    user-select: none;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    font-family: 'Geist', sans-serif;
+    letter-spacing: -0.2px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--text);
+    font-weight: 500;
+    border-bottom: 2px solid var(--text);
+  }
+
+  /* ─── VIEWS ─── */
+  .view { display: none; flex: 1; }
+  .view.active { display: flex; flex-direction: column; }
+
+  /* ─── HOME VIEW ─── */
+  .home-view {
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 53px);
+    padding: 40px 20px;
+  }
+  .home-center {
+    width: 100%;
+    max-width: 540px;
+  }
+  .home-headline {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(15px, 2.5vw, 17px);
+    color: var(--text3);
+    font-weight: 400;
+    margin-bottom: 10px;
+    font-style: italic;
+    letter-spacing: 0.2px;
+  }
+  .search-wrap {
+    position: relative;
+    width: 100%;
+  }
+  .search-label {
+    display: block;
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(28px, 5vw, 38px);
+    color: var(--text);
+    font-weight: 400;
+    margin-bottom: 16px;
+    line-height: 1.15;
+    letter-spacing: -1px;
+  }
+  .search-input-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 12px rgba(26,23,20,0.06);
+  }
+  .search-input-wrap:focus-within {
+    border-color: var(--text);
+    box-shadow: 0 4px 24px rgba(26,23,20,0.12);
+  }
+  .search-icon {
+    padding: 0 16px;
+    color: var(--text3);
+    font-size: 18px;
+    flex-shrink: 0;
+    display: flex; align-items: center;
+  }
+  .search-input {
+    flex: 1;
+    padding: 18px 0;
+    font-size: 16px;
+    color: var(--text);
+    background: none;
+    border: none;
+    outline: none;
+    font-family: 'Geist', sans-serif;
+    font-weight: 400;
+    letter-spacing: -0.3px;
+  }
+  .search-input::placeholder { color: var(--text3); }
+  .search-go {
+    margin: 8px;
+    background: var(--text);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Geist', sans-serif;
+    transition: background 0.18s, transform 0.1s;
+    white-space: nowrap;
+    letter-spacing: -0.2px;
+  }
+  .search-go:hover { background: #2D2A26; }
+  .search-go:active { transform: scale(0.97); }
+
+  /* Suggestions */
+  .search-suggestions {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .suggestion-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 7px 14px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Geist', sans-serif;
+    letter-spacing: -0.2px;
+  }
+  .suggestion-chip:hover {
+    background: var(--text);
+    color: #fff;
+    border-color: var(--text);
+  }
+
+  /* Quick filters */
+  .quick-filters {
+    display: flex;
+    gap: 8px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .qf-label {
+    font-size: 12px;
+    color: var(--text3);
+    padding: 7px 0;
+    width: 100%;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+  }
+  .qf-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+    font-family: 'Geist', sans-serif;
+    letter-spacing: -0.2px;
+  }
+  .qf-chip:hover { background: var(--bg2); border-color: rgba(26,23,20,0.18); color: var(--text); }
+  .qf-chip.active { background: var(--text); color: #fff; border-color: var(--text); }
+  .qf-chip .dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* Results */
+  .results-area {
+    margin-top: 32px;
+    display: none;
+  }
+  .results-area.visible { display: block; }
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .results-count {
+    font-size: 13px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+  .results-sort {
+    font-size: 13px; color: var(--text2);
+    background: none; border: none;
+    cursor: pointer; font-family: 'Geist', sans-serif;
+    padding: 4px 8px; border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .results-sort:hover { background: var(--bg2); }
+  .parking-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .parking-card:hover {
+    border-color: rgba(26,23,20,0.2);
+    box-shadow: 0 4px 20px rgba(26,23,20,0.08);
+    transform: translateY(-1px);
+  }
+  .parking-card.expanded { border-color: var(--text); }
+  .pc-status {
+    flex-shrink: 0;
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px; font-weight: 500;
+    line-height: 1;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .pc-status .count { font-size: 16px; font-weight: 500; }
+  .pc-status .label-s { font-size: 9px; opacity: 0.7; letter-spacing: 0.3px; }
+  .pc-status.green { background: var(--green-bg); color: var(--green); }
+  .pc-status.yellow { background: var(--yellow-bg); color: var(--yellow); }
+  .pc-status.red { background: var(--red-bg); color: var(--red); }
+  .pc-info { flex: 1; min-width: 0; }
+  .pc-name { font-size: 15px; font-weight: 500; color: var(--text); letter-spacing: -0.3px; margin-bottom: 3px; }
+  .pc-meta { font-size: 13px; color: var(--text3); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .pc-dot { display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: var(--border); }
+  .pc-price { font-family: 'DM Mono', monospace; font-size: 13px; }
+  .pc-badges { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+  .pc-badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 100px;
+    background: var(--bg2); color: var(--text2);
+    border: 1px solid var(--border2);
+    font-family: 'Geist', sans-serif;
+  }
+  .pc-arrow { color: var(--text3); font-size: 16px; flex-shrink: 0; transition: transform 0.2s; }
+  .parking-card.expanded .pc-arrow { transform: rotate(90deg); }
+
+  /* Expanded detail */
+  .pc-detail {
+    display: none;
+    padding: 16px 20px 20px;
+    background: var(--surface);
+    border: 1px solid var(--text);
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    margin-top: -9px;
+    margin-bottom: 8px;
+  }
+  .pc-detail.visible { display: block; }
+  .pc-bar-wrap { margin-bottom: 16px; }
+  .pc-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text3); margin-bottom: 6px; }
+  .pc-bar-bg { height: 5px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+  .pc-bar-fill { height: 5px; border-radius: 3px; transition: width 0.6s ease; }
+  .pc-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .pc-detail-item { background: var(--bg2); border-radius: 10px; padding: 12px; }
+  .pc-detail-val { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); }
+  .pc-detail-label { font-size: 11px; color: var(--text3); margin-top: 2px; letter-spacing: 0.3px; }
+  .pc-detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-route {
+    flex: 1; min-width: 120px;
+    background: var(--text); color: #fff;
+    border: none; border-radius: var(--radius-sm);
+    padding: 11px 16px; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: 'Geist', sans-serif;
+    letter-spacing: -0.2px;
+    transition: background 0.18s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-route:hover { background: #2D2A26; }
+  .btn-save {
+    background: var(--surface); color: var(--text2);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 11px 16px; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: 'Geist', sans-serif;
+    letter-spacing: -0.2px;
+    transition: all 0.18s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-save:hover { background: var(--bg2); }
+
+  /* ─── MAP VIEW ─── */
+  .map-view {
+    padding: 0;
+    flex-direction: row;
+    min-height: calc(100vh - 53px);
+  }
+  .map-sidebar {
+    width: 340px;
+    min-width: 280px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .map-search-bar {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .map-search-inner {
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .map-search-inner:focus-within { border-color: var(--text); }
+  .map-search-input {
+    flex: 1; padding: 11px 14px;
+    font-size: 14px; color: var(--text);
+    background: none; border: none; outline: none;
+    font-family: 'Geist', sans-serif;
+    letter-spacing: -0.2px;
+  }
+  .map-search-input::placeholder { color: var(--text3); }
+  .map-locate-btn {
+    padding: 8px 12px;
+    background: none; border: none; cursor: pointer;
+    color: var(--text3); font-size: 16px;
+    transition: color 0.15s;
+    display: flex; align-items: center;
+  }
+  .map-locate-btn:hover { color: var(--text); }
+  .map-filter-bar {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .map-filter-chip {
+    font-size: 12px; padding: 5px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--bg); color: var(--text2);
+    cursor: pointer; transition: all 0.15s;
+    font-family: 'Geist', sans-serif;
+    white-space: nowrap;
+  }
+  .map-filter-chip.active { background: var(--text); color: #fff; border-color: var(--text); }
+  .map-filter-chip:hover:not(.active) { background: var(--bg2); }
+  .map-list {
+    flex: 1; overflow-y: auto;
+    padding: 8px;
+  }
+  .map-list::-webkit-scrollbar { width: 4px; }
+  .map-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .map-item {
+    padding: 12px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 2px;
+  }
+  .map-item:hover { background: var(--bg); }
+  .map-item.selected { background: var(--bg); border-left: 3px solid var(--text); padding-left: 11px; }
+  .mi-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .mi-name { font-size: 14px; font-weight: 500; color: var(--text); letter-spacing: -0.2px; }
+  .mi-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .mi-free { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; margin-left: auto; flex-shrink: 0; }
+
+  /* Map canvas */
+  .map-canvas {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, #E9EEF5 0%, #DDE6EE 40%, #D5E2ED 100%);
+  }
+
+  /* Streets */
+  .st { position: absolute; background: #fff; }
+  .st-h { left: 0; right: 0; }
+  .st-v { top: 0; bottom: 0; }
+
+  /* Blocks */
+  .blk { position: absolute; background: rgba(180, 195, 210, 0.45); border-radius: 5px; }
+
+  /* Map markers */
+  .map-marker {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    cursor: pointer;
+    z-index: 10;
+    animation: markerDrop 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes markerDrop {
+    from { opacity: 0; transform: translate(-50%, -120%); }
+    to { opacity: 1; transform: translate(-50%, -100%); }
+  }
+  .mm-pin {
+    width: 40px; height: 40px;
+    border-radius: 50% 50% 50% 4px;
+    transform: rotate(-45deg);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .map-marker:hover .mm-pin, .map-marker.selected .mm-pin {
+    transform: rotate(-45deg) scale(1.15);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.28);
+  }
+  .mm-label {
+    transform: rotate(45deg);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 500; color: #fff;
+    line-height: 1;
+  }
+  .mm-tail { width: 5px; height: 5px; border-radius: 50%; margin-top: -3px; }
+  .mm-green .mm-pin { background: var(--green); }
+  .mm-green .mm-tail { background: var(--green); }
+  .mm-yellow .mm-pin { background: var(--yellow); }
+  .mm-yellow .mm-tail { background: var(--yellow); }
+  .mm-red .mm-pin { background: var(--red); }
+  .mm-red .mm-tail { background: var(--red); }
+
+  /* Map detail panel */
+  .map-detail-panel {
+    position: absolute;
+    bottom: 20px; left: 20px; right: 20px;
+    max-width: 360px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: 0 8px 40px rgba(26,23,20,0.16);
+    display: none;
+    animation: panelUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 20;
+  }
+  .map-detail-panel.visible { display: block; }
+  @keyframes panelUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .mdp-close {
+    position: absolute; top: 12px; right: 12px;
+    background: var(--bg2); border: none; border-radius: 50%;
+    width: 28px; height: 28px; cursor: pointer;
+    font-size: 13px; color: var(--text3);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .mdp-close:hover { background: var(--border); color: var(--text); }
+  .mdp-name { font-size: 16px; font-weight: 500; color: var(--text); letter-spacing: -0.4px; margin-bottom: 4px; margin-right: 24px; }
+  .mdp-addr { font-size: 13px; color: var(--text3); margin-bottom: 14px; }
+  .mdp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .mdp-stat { background: var(--bg2); border-radius: 10px; padding: 10px; text-align: center; }
+  .mdp-val { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--text); }
+  .mdp-lbl { font-size: 10px; color: var(--text3); margin-top: 2px; letter-spacing: 0.3px; text-transform: uppercase; }
+  .mdp-bar-bg { height: 4px; background: var(--bg2); border-radius: 2px; margin-bottom: 14px; overflow: hidden; }
+  .mdp-bar-fill { height: 4px; border-radius: 2px; }
+  .mdp-actions { display: flex; gap: 8px; }
+  .mdp-route-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; width: 100%; }
+  .mdp-route-btn {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 6px;
+    text-align: center; cursor: pointer; text-decoration: none;
+    transition: all 0.15s;
+  }
+  .mdp-route-btn:hover { background: var(--text); border-color: var(--text); }
+  .mdp-route-btn:hover .mdp-rb-label { color: #fff; }
+  .mdp-rb-icon { font-size: 16px; margin-bottom: 2px; }
+  .mdp-rb-label { font-size: 10px; font-weight: 500; color: var(--text2); letter-spacing: -0.1px; font-family: 'Geist', sans-serif; }
+
+  /* Map legend */
+  .map-legend-box {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    z-index: 10;
+    box-shadow: 0 2px 12px rgba(26,23,20,0.08);
+  }
+  .ml-row { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text2); }
+  .ml-row + .ml-row { margin-top: 5px; }
+  .ml-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Map timestamp */
+  .map-ts {
+    position: absolute; bottom: 16px; right: 16px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--text3);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 10px;
+    z-index: 5;
+  }
+  .map-ts .live-dot {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--green);
+    margin-right: 5px; animation: blink 2s infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* ─── ROUTE MODAL ─── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    background: rgba(26,23,20,0.5); backdrop-filter: blur(4px);
+    align-items: flex-end; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; animation: fadeBg 0.2s ease; }
+  @keyframes fadeBg { from { opacity: 0; } to { opacity: 1; } }
+  .modal {
+    background: var(--surface);
+    border-radius: 20px 20px 16px 16px;
+    padding: 28px 24px;
+    width: 100%; max-width: 420px;
+    box-shadow: 0 -4px 60px rgba(26,23,20,0.2);
+    animation: sheetUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @keyframes sheetUp { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+  .modal-title { font-size: 18px; font-weight: 500; color: var(--text); margin-bottom: 4px; letter-spacing: -0.5px; }
+  .modal-sub { font-size: 14px; color: var(--text3); margin-bottom: 20px; }
+  .route-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .route-opt {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); padding: 18px 10px;
+    text-align: center; cursor: pointer; text-decoration: none;
+    display: block; transition: all 0.18s;
+  }
+  .route-opt:hover { border-color: var(--text); background: var(--bg2); transform: translateY(-2px); }
+  .ro-icon { font-size: 26px; margin-bottom: 6px; }
+  .ro-name { font-size: 13px; font-weight: 500; color: var(--text); letter-spacing: -0.2px; }
+  .ro-tag { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ─── TOAST ─── */
+  .toast-wrap { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+  .toast {
+    background: var(--text); color: #fff;
+    border-radius: 100px; padding: 10px 18px;
+    font-size: 13px; font-weight: 400;
+    box-shadow: 0 4px 20px rgba(26,23,20,0.25);
+    animation: toastIn 0.25s ease;
+    white-space: nowrap;
+    font-family: 'Geist', sans-serif;
+    letter-spacing: -0.2px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .toast-out { animation: toastOut 0.25s ease forwards; }
+  @keyframes toastOut { to { opacity: 0; transform: translateY(8px); } }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 700px) {
+    .map-view { flex-direction: column; }
+    .map-sidebar { width: 100%; min-width: unset; height: 220px; border-right: none; border-bottom: 1px solid var(--border); }
+    .map-canvas { flex: 1; min-height: 300px; }
+    .home-view { padding: 28px 16px; justify-content: flex-start; padding-top: 60px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── TAB BAR ─── -->
+<div class="tab-bar">
+  <div class="logo">Park<span>find</span></div>
+  <button class="tab active" onclick="switchTab('home', this)">Suche</button>
+  <button class="tab" onclick="switchTab('map', this)">Karte</button>
+</div>
+
+<!-- ─── HOME / SEARCH VIEW ─── -->
+<div class="view home-view active" id="view-home">
+  <div class="home-center">
+    <span class="home-headline">Wo parkierst du?</span>
+    <label class="search-label" for="main-search">Wohin gehts</label>
+    <div class="search-wrap">
+      <div class="search-input-wrap">
+        <div class="search-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+        <input
+          type="text"
+          id="main-search"
+          class="search-input"
+          placeholder="Adresse, Ort oder POI eingeben..."
+          oninput="onSearchInput(this.value)"
+          onkeydown="if(event.key==='Enter') doSearch()"
+          autocomplete="off"
+        >
+        <button class="search-go" onclick="doSearch()">Parkplätze zeigen</button>
+      </div>
+
+      <div class="search-suggestions" id="search-suggestions">
+        <div class="suggestion-chip" onclick="setSearch('Zürich HB')">📍 Zürich HB</div>
+        <div class="suggestion-chip" onclick="setSearch('Wien Innenstadt')">📍 Wien Innenstadt</div>
+        <div class="suggestion-chip" onclick="setSearch('München Marienplatz')">📍 München Marienplatz</div>
+        <div class="suggestion-chip" onclick="setSearch('Mein Standort')">📡 Mein Standort</div>
+      </div>
+    </div>
+
+    <div class="quick-filters">
+      <div class="qf-label">Filter</div>
+      <div class="qf-chip" id="qf-all" onclick="qfToggle('all', this)"><div class="dot" style="background:var(--text3)"></div>Alle</div>
+      <div class="qf-chip" id="qf-free" onclick="qfToggle('free', this)"><div class="dot" style="background:var(--green)"></div>Freie Plätze</div>
+      <div class="qf-chip" id="qf-electric" onclick="qfToggle('electric', this)"><div class="dot" style="background:#3B5BDB"></div>Ladesäule</div>
+      <div class="qf-chip" id="qf-covered" onclick="qfToggle('covered', this)"><div class="dot" style="background:var(--yellow)"></div>Überdacht</div>
+      <div class="qf-chip" id="qf-cheap" onclick="qfToggle('cheap', this)"><div class="dot" style="background:#2A9D8F"></div>&lt; 2 €/h</div>
+    </div>
+
+    <div class="results-area" id="results-area">
+      <div class="results-header">
+        <span class="results-count" id="results-count">— Ergebnisse</span>
+        <button class="results-sort" onclick="showToast('Sortierung geändert')">Distanz ↕</button>
+      </div>
+      <div id="results-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MAP VIEW ─── -->
+<div class="view map-view" id="view-map">
+  <div class="map-sidebar">
+    <div class="map-search-bar">
+      <div class="map-search-inner">
+        <input type="text" class="map-search-input" placeholder="Ort suchen..." oninput="filterMapList(this.value)" id="map-search-input">
+        <button class="map-locate-btn" onclick="locateMe()" title="Mein Standort">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="map-filter-bar">
+      <div class="map-filter-chip active" onclick="mapFilter('all', this)">Alle</div>
+      <div class="map-filter-chip" onclick="mapFilter('free', this)">Frei</div>
+      <div class="map-filter-chip" onclick="mapFilter('electric', this)">⚡</div>
+      <div class="map-filter-chip" onclick="mapFilter('covered', this)">Überdacht</div>
+    </div>
+    <div class="map-list" id="map-list"></div>
+  </div>
+
+  <div class="map-canvas" id="map-canvas">
+    <!-- Streets -->
+    <div class="st st-h" style="top:38%;height:30px;opacity:0.7"></div>
+    <div class="st st-h" style="top:62%;height:18px;opacity:0.6"></div>
+    <div class="st st-h" style="top:80%;height:12px;opacity:0.45"></div>
+    <div class="st st-v" style="left:28%;width:30px;opacity:0.7"></div>
+    <div class="st st-v" style="left:55%;width:20px;opacity:0.6"></div>
+    <div class="st st-v" style="left:74%;width:14px;opacity:0.5"></div>
+    <!-- Blocks -->
+    <div class="blk" style="left:2%;top:5%;width:23%;height:29%"></div>
+    <div class="blk" style="left:30%;top:4%;width:22%;height:29%"></div>
+    <div class="blk" style="left:57%;top:5%;width:16%;height:27%"></div>
+    <div class="blk" style="left:75%;top:4%;width:22%;height:29%"></div>
+    <div class="blk" style="left:2%;top:42%;width:23%;height:16%"></div>
+    <div class="blk" style="left:30%;top:42%;width:22%;height:16%"></div>
+    <div class="blk" style="left:2%;top:66%;width:23%;height:28%"></div>
+    <div class="blk" style="left:30%;top:66%;width:22%;height:26%"></div>
+    <div class="blk" style="left:57%;top:66%;width:16%;height:26%"></div>
+    <div class="blk" style="left:75%;top:66%;width:22%;height:26%"></div>
+    <!-- Markers injected by JS -->
+    <div id="map-markers"></div>
+
+    <!-- Legend -->
+    <div class="map-legend-box">
+      <div class="ml-row"><div class="ml-dot" style="background:var(--green)"></div>Frei &gt;30%</div>
+      <div class="ml-row"><div class="ml-dot" style="background:var(--yellow)"></div>Teilweise</div>
+      <div class="ml-row"><div class="ml-dot" style="background:var(--red)"></div>Fast voll</div>
+    </div>
+
+    <!-- Timestamp -->
+    <div class="map-ts"><span class="live-dot"></span><span id="map-ts-text">Live — 14:12</span></div>
+
+    <!-- Detail panel -->
+    <div class="map-detail-panel" id="map-detail-panel">
+      <button class="mdp-close" onclick="closeDetailPanel()">✕</button>
+      <div class="mdp-name" id="mdp-name">—</div>
+      <div class="mdp-addr" id="mdp-addr">—</div>
+      <div class="mdp-stats">
+        <div class="mdp-stat"><div class="mdp-val" id="mdp-free">—</div><div class="mdp-lbl">Frei</div></div>
+        <div class="mdp-stat"><div class="mdp-val" id="mdp-price">—</div><div class="mdp-lbl">€/Std.</div></div>
+        <div class="mdp-stat"><div class="mdp-val" id="mdp-type">—</div><div class="mdp-lbl">Typ</div></div>
+      </div>
+      <div class="mdp-bar-bg"><div class="mdp-bar-fill" id="mdp-bar"></div></div>
+      <div class="mdp-route-btns">
+        <a class="mdp-route-btn" id="mdp-gmaps" href="#" target="_blank" onclick="showToast('Google Maps wird geöffnet')"><div class="mdp-rb-icon">🗺️</div><div class="mdp-rb-label">Google Maps</div></a>
+        <a class="mdp-route-btn" id="mdp-apple" href="#" target="_blank" onclick="showToast('Apple Maps wird geöffnet')"><div class="mdp-rb-icon">🍎</div><div class="mdp-rb-label">Apple Maps</div></a>
+        <a class="mdp-route-btn" id="mdp-waze" href="#" target="_blank" onclick="showToast('Waze wird geöffnet')"><div class="mdp-rb-icon">🚗</div><div class="mdp-rb-label">Waze</div></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ROUTE SHEET ─── -->
+<div class="modal-overlay" id="route-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="route-modal-title">Route starten</div>
+    <div class="modal-sub" id="route-modal-sub">Wähle deine Navigations-App</div>
+    <div class="route-grid">
+      <a class="route-opt" id="rm-gmaps" href="#" target="_blank" onclick="closeModal('route-modal');showToast('Google Maps wird geöffnet')">
+        <div class="ro-icon">🗺️</div>
+        <div class="ro-name">Google Maps</div>
+        <div class="ro-tag">Empfohlen</div>
+      </a>
+      <a class="route-opt" id="rm-apple" href="#" target="_blank" onclick="closeModal('route-modal');showToast('Apple Maps wird geöffnet')">
+        <div class="ro-icon">🍎</div>
+        <div class="ro-name">Apple Maps</div>
+        <div class="ro-tag">iOS & macOS</div>
+      </a>
+      <a class="route-opt" id="rm-waze" href="#" target="_blank" onclick="closeModal('route-modal');showToast('Waze wird geöffnet')">
+        <div class="ro-icon">🚗</div>
+        <div class="ro-name">Waze</div>
+        <div class="ro-tag">Live-Verkehr</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TOAST ─── -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ─── DATA ───
+const parkings = [
+  { id:0, name:'Parkhaus Bahnhofplatz', addr:'Bahnhofstr. 4', free:87, total:250, pct:35, price:3.50, electric:true, covered:true, type:'Parkhaus', lat:47.3776, lng:8.5403, cx:'19%', cy:'50%', color:'green' },
+  { id:1, name:'Urania Parkhaus', addr:'Uraniastr. 9', free:23, total:120, pct:72, price:4.00, electric:false, covered:true, type:'Parkhaus', lat:47.3741, lng:8.5387, cx:'46%', cy:'34%', color:'yellow' },
+  { id:2, name:'Shopville Parking', addr:'Bahnhofquai', free:4, total:80, pct:94, price:5.00, electric:true, covered:true, type:'Parkhaus', lat:47.3779, lng:8.5391, cx:'64%', cy:'57%', color:'red' },
+  { id:3, name:'P+R Altstetten', addr:'Altstetterstr. 200', free:112, total:200, pct:18, price:1.50, electric:true, covered:false, type:'P+R', lat:47.3919, lng:8.4889, cx:'79%', cy:'28%', color:'green' },
+  { id:4, name:'Parkplatz Münsterhof', addr:'Münsterhof 16', free:55, total:70, pct:22, price:2.50, electric:false, covered:false, type:'Parkplatz', lat:47.3704, lng:8.5412, cx:'35%', cy:'70%', color:'green' },
+];
+
+let activeFilters = new Set();
+let selectedMapParkingId = null;
+let searchQuery = '';
+
+// ─── TAB SWITCHING ───
+function switchTab(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'map') renderMapMarkers(parkings);
+}
+
+// ─── SEARCH ───
+function setSearch(val) {
+  document.getElementById('main-search').value = val;
+  doSearch();
+}
+
+function onSearchInput(val) {
+  searchQuery = val;
+}
+
+function doSearch() {
+  const q = document.getElementById('main-search').value.trim();
+  if (!q) { showToast('Bitte gib einen Ort ein'); return; }
+  if (q === 'Mein Standort') {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        () => { showResults(parkings); showToast('Standort erkannt'); },
+        () => showToast('Standort nicht verfügbar')
+      );
+    } else { showToast('Geolocation nicht verfügbar'); }
+    return;
+  }
+  showResults(applyFilters(parkings));
+}
+
+function applyFilters(list) {
+  let filtered = [...list];
+  if (activeFilters.has('free')) filtered = filtered.filter(p => p.pct < 30);
+  if (activeFilters.has('electric')) filtered = filtered.filter(p => p.electric);
+  if (activeFilters.has('covered')) filtered = filtered.filter(p => p.covered);
+  if (activeFilters.has('cheap')) filtered = filtered.filter(p => p.price < 2);
+  return filtered;
+}
+
+function showResults(list) {
+  const area = document.getElementById('results-area');
+  const container = document.getElementById('results-list');
+  const countEl = document.getElementById('results-count');
+  area.classList.add('visible');
+  countEl.textContent = `${list.length} Parkplatz${list.length !== 1 ? 'plätze' : ''} gefunden`;
+  container.innerHTML = list.map(p => {
+    const colorMap = { green: '#D8EDDF', yellow: '#FDF3DC', red: '#FAE0DC' };
+    const textColor = { green: 'var(--green)', yellow: 'var(--yellow)', red: 'var(--red)' };
+    return `
+    <div class="parking-card" id="card-${p.id}" onclick="toggleCard(${p.id})">
+      <div class="pc-status ${p.color}">
+        <span class="count">${p.free}</span>
+        <span class="label-s">FREI</span>
+      </div>
+      <div class="pc-info">
+        <div class="pc-name">${p.name}</div>
+        <div class="pc-meta">
+          <span>${p.addr}</span>
+          <span class="pc-dot"></span>
+          <span class="pc-price">${p.price.toFixed(2)} €/h</span>
+          <span class="pc-dot"></span>
+          <span>${p.pct}% belegt</span>
+        </div>
+        <div class="pc-badges">
+          <span class="pc-badge">${p.type}</span>
+          ${p.electric ? '<span class="pc-badge">⚡ Ladesäule</span>' : ''}
+          ${p.covered ? '<span class="pc-badge">🏠 Überdacht</span>' : ''}
+        </div>
+      </div>
+      <span class="pc-arrow">›</span>
+    </div>
+    <div class="pc-detail" id="detail-${p.id}">
+      <div class="pc-bar-wrap">
+        <div class="pc-bar-label"><span>Auslastung</span><span>${p.pct}%</span></div>
+        <div class="pc-bar-bg"><div class="pc-bar-fill" style="width:${p.pct}%;background:${textColor[p.color]}"></div></div>
+      </div>
+      <div class="pc-detail-grid">
+        <div class="pc-detail-item"><div class="pc-detail-val">${p.free} / ${p.total}</div><div class="pc-detail-label">Freie Plätze</div></div>
+        <div class="pc-detail-item"><div class="pc-detail-val">${p.price.toFixed(2)} €</div><div class="pc-detail-label">Pro Stunde</div></div>
+        <div class="pc-detail-item"><div class="pc-detail-val">24/7</div><div class="pc-detail-label">Geöffnet</div></div>
+        <div class="pc-detail-item"><div class="pc-detail-val">~2 min</div><div class="pc-detail-label">Fahrzeit</div></div>
+      </div>
+      <div class="pc-detail-actions">
+        <button class="btn-route" onclick="openRouteSheet(${p.id}, event)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M15 5l7 7-7 7"/></svg>
+          Route starten
+        </button>
+        <button class="btn-save" onclick="saveParking(${p.id}, event)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          Speichern
+        </button>
+      </div>
+    </div>
+    `;
+  }).join('');
+}
+
+function toggleCard(id) {
+  const card = document.getElementById('card-' + id);
+  const detail = document.getElementById('detail-' + id);
+  const expanded = card.classList.toggle('expanded');
+  detail.classList.toggle('visible', expanded);
+  if (!expanded) return;
+  // Close others
+  parkings.forEach(p => {
+    if (p.id !== id) {
+      document.getElementById('card-' + p.id)?.classList.remove('expanded');
+      document.getElementById('detail-' + p.id)?.classList.remove('visible');
+    }
+  });
+}
+
+// ─── QUICK FILTERS ───
+function qfToggle(key, el) {
+  if (key === 'all') {
+    activeFilters.clear();
+    document.querySelectorAll('.qf-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    document.getElementById('qf-all').classList.remove('active');
+    if (activeFilters.has(key)) { activeFilters.delete(key); el.classList.remove('active'); }
+    else { activeFilters.add(key); el.classList.add('active'); }
+  }
+  const q = document.getElementById('main-search').value.trim();
+  if (q) showResults(applyFilters(parkings));
+}
+
+// ─── ROUTE SHEET ───
+function openRouteSheet(id, e) {
+  e && e.stopPropagation();
+  const p = parkings[id];
+  const dest = `${p.lat},${p.lng}`;
+  document.getElementById('route-modal-title').textContent = 'Route starten';
+  document.getElementById('route-modal-sub').textContent = `→ ${p.name}`;
+  document.getElementById('rm-gmaps').href = `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
+  document.getElementById('rm-apple').href = `https://maps.apple.com/?daddr=${dest}`;
+  document.getElementById('rm-waze').href = `https://waze.com/ul?ll=${dest}&navigate=yes`;
+  document.getElementById('route-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function saveParking(id, e) {
+  e && e.stopPropagation();
+  showToast(`${parkings[id].name} gespeichert ★`);
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); });
+});
+
+// ─── MAP ───
+function renderMapMarkers(list) {
+  const container = document.getElementById('map-markers');
+  container.innerHTML = list.map(p => `
+    <div class="map-marker mm-${p.color}" style="left:${p.cx};top:${p.cy}" onclick="selectMapParking(${p.id})" id="mm-${p.id}">
+      <div class="mm-pin"><span class="mm-label">${p.free}</span></div>
+      <div class="mm-tail"></div>
+    </div>
+  `).join('');
+}
+
+function renderMapList(list) {
+  const container = document.getElementById('map-list');
+  container.innerHTML = list.map(p => `
+    <div class="map-item ${p.id === selectedMapParkingId ? 'selected' : ''}" id="mi-${p.id}" onclick="selectMapParking(${p.id})">
+      <div class="mi-dot" style="background:var(--${p.color})"></div>
+      <div style="flex:1;min-width:0">
+        <div class="mi-name">${p.name}</div>
+        <div class="mi-sub">${p.addr} · ${p.price.toFixed(2)} €/h${p.electric ? ' ⚡' : ''}</div>
+      </div>
+      <div class="mi-free" style="color:var(--${p.color})">${p.free} frei</div>
+    </div>
+  `).join('');
+}
+
+function selectMapParking(id) {
+  selectedMapParkingId = id;
+  const p = parkings[id];
+  // Update list selection
+  document.querySelectorAll('.map-item').forEach(el => el.classList.remove('selected'));
+  const mi = document.getElementById('mi-' + id);
+  if (mi) mi.classList.add('selected');
+  // Update marker selection
+  document.querySelectorAll('.map-marker').forEach(el => el.classList.remove('selected'));
+  const mm = document.getElementById('mm-' + id);
+  if (mm) mm.classList.add('selected');
+  // Show detail panel
+  const panel = document.getElementById('map-detail-panel');
+  document.getElementById('mdp-name').textContent = p.name;
+  document.getElementById('mdp-addr').textContent = p.addr;
+  document.getElementById('mdp-free').textContent = p.free;
+  document.getElementById('mdp-price').textContent = p.price.toFixed(2);
+  document.getElementById('mdp-type').textContent = p.type;
+  const barColors = { green: 'var(--green)', yellow: 'var(--yellow)', red: 'var(--red)' };
+  const bar = document.getElementById('mdp-bar');
+  bar.style.width = p.pct + '%';
+  bar.style.background = barColors[p.color];
+  const dest = `${p.lat},${p.lng}`;
+  document.getElementById('mdp-gmaps').href = `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
+  document.getElementById('mdp-apple').href = `https://maps.apple.com/?daddr=${dest}`;
+  document.getElementById('mdp-waze').href = `https://waze.com/ul?ll=${dest}&navigate=yes`;
+  panel.classList.add('visible');
+}
+
+function closeDetailPanel() {
+  document.getElementById('map-detail-panel').classList.remove('visible');
+  selectedMapParkingId = null;
+  document.querySelectorAll('.map-marker').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.map-item').forEach(el => el.classList.remove('selected'));
+}
+
+function filterMapList(val) {
+  const q = val.toLowerCase();
+  const filtered = parkings.filter(p => p.name.toLowerCase().includes(q) || p.addr.toLowerCase().includes(q));
+  renderMapList(filtered);
+}
+
+function mapFilter(type, el) {
+  document.querySelectorAll('.map-filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  let filtered = parkings;
+  if (type === 'free') filtered = parkings.filter(p => p.pct < 30);
+  if (type === 'electric') filtered = parkings.filter(p => p.electric);
+  if (type === 'covered') filtered = parkings.filter(p => p.covered);
+  renderMapMarkers(filtered);
+  renderMapList(filtered);
+  closeDetailPanel();
+}
+
+function locateMe() {
+  if (!navigator.geolocation) { showToast('Geolocation nicht verfügbar'); return; }
+  navigator.geolocation.getCurrentPosition(
+    () => showToast('Karte auf Standort zentriert'),
+    () => showToast('Standort nicht verfügbar')
+  );
+}
+
+// ─── TIMESTAMP ───
+function updateTS() {
+  const now = new Date();
+  document.getElementById('map-ts-text').textContent = `Live — ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+}
+updateTS();
+setInterval(updateTS, 30000);
+
+// ─── LIVE UPDATES SIMULATION ───
+setInterval(() => {
+  const p = parkings[Math.floor(Math.random() * parkings.length)];
+  const delta = Math.floor(Math.random() * 10) - 4;
+  p.free = Math.max(0, Math.min(p.total, p.free + delta));
+  p.pct = Math.round((1 - p.free / p.total) * 100);
+  p.color = p.pct > 70 ? 'red' : p.pct > 40 ? 'yellow' : 'green';
+  // Update map marker
+  const mm = document.getElementById('mm-' + p.id);
+  if (mm) {
+    mm.className = `map-marker mm-${p.color}${selectedMapParkingId === p.id ? ' selected' : ''}`;
+    const label = mm.querySelector('.mm-label');
+    if (label) { label.textContent = p.free; }
+  }
+  // Update map list item
+  const mi = document.getElementById('mi-' + p.id);
+  if (mi) {
+    mi.querySelector('.mi-dot').style.background = `var(--${p.color})`;
+    mi.querySelector('.mi-free').style.color = `var(--${p.color})`;
+    mi.querySelector('.mi-free').textContent = `${p.free} frei`;
+  }
+}, 4000);
+
+// ─── TOAST ───
+function showToast(msg) {
+  const wrap = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(() => { t.classList.add('toast-out'); setTimeout(() => t.remove(), 250); }, 2500);
+}
+
+// ─── INIT MAP ───
+renderMapMarkers(parkings);
+renderMapList(parkings);
+</script>
+</body>
+</html>
