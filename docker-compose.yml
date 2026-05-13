@@ -48,5 +48,20 @@ services:
       - /app/node_modules
     command: sh -c "npm run db:migrate:deploy && npm run start:dev"
 
+  frontend:
+    build: ./frontend
+    container_name: parking-frontend
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+
 volumes:
   db-data:
